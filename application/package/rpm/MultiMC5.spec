@@ -1,70 +1,75 @@
-## Global variables
-%global releaseVer 1.5
+##Init variables
 
-Name:           MultiMC5
-Version:        0
-Release:        %{releaseVer}%{?dist}
+%global packageVer 1.3
+%global _optdir /opt
+
+## Package info declaration
+
+Name:           multimc
+Version:        %{packageVer}
+Release:        1%{?dist}
 Summary:        Free, open source launcher and instance manager for Minecraft
 
 License:        ASL 2.0
-URL:            https://multimc.org
-ExclusiveArch:  %{ix86} x86_64
+URL:            https://multimc.org/
+Source0:        %{name}-%{packageVer}.tar.gz
 
-BuildRequires:  rpm-build
-Patch0:         desktopfile.patch
+##Builds as noarch, does not install on ARM based machines due to a lack of ARM MultiMC prebuilt binaries.
+BuildArch:      noarch
+ExclusiveArch:  %{ix86} x86_64 noarch
 
-Requires:       zenity qt5-qtbase wget
-Recommends:     java-latest-openjdk
-Provides:       multimc MultiMC multimc5
+Requires:       bash
+Requires:       java-1.8.0-openjdk
+Requires:       qt5
+Requires:       zenity
+Requires:       zlib
 
 %description
-Free, open source launcher and instance manager for Minecraft
+Free, open source launcher and instance manager for Minecraft.
 
 %prep
-cp ../ubuntu/multimc/opt/multimc/run.sh %{_builddir}/run.sh
-cp ../../resources/multimc/scalable/multimc.svg %{_builddir}/multimc.svg
 
-%build
-cat > %{_builddir}/multimc.desktop << EOF
+%setup -q
+
+%install
+##Installs directories
+install -dm 755 %{buildroot}/usr/{bin,share/{applications,icons/hicolor/scalable/apps}}
+install -dm 755 %{buildroot}/opt/MultiMC
+
+##Installs icon and run.sh
+install -m 644 %{_builddir}/multimc-%{packageVer}/multimc.svg %{buildroot}/usr/share/icons/hicolor/scalable/apps/multimc.svg
+install -m 755 %{_builddir}/multimc-%{packageVer}/run.sh %{buildroot}%{_optdir}/MultiMC/run.sh
+
+##Generates and installs desktop file to /usr/share/applications
+cat > %{buildroot}/%{_datadir}/applications/%{name}.desktop << EOF
 
 ## Desktop File
 
 [Desktop Entry]
-Version=%{version}-%{release}
+Version=%{packageVer}
 Name=MultiMC
 GenericName=MultiMC Launcher
 Comment=Free, open source launcher and instance manager for Minecraft.
 Type=Application
 Terminal=false
-Exec=%{_datadir}/multimc/run.sh
+Exec=%{_optdir}/MultiMC/run.sh
 Icon=multimc
 Categories=Game
 Keywords=game;minecraft;
 EOF
 
-%install
-install -dm 755 %{buildroot}/usr/{bin,share/{applications,multimc,icons/hicolor/scalable/apps}}
-install -dm 755 %{buildroot}/opt/MultiMC
-
-install -m 0644 %{_builddir}/multimc.svg %{buildroot}%{_datadir}/icons/hicolor/scalable/apps/multimc.svg
-install -m 0755 %{_builddir}/run.sh %{buildroot}%{_datadir}/multimc/run.sh
-
-install -m 0644 %{_builddir}/multimc.desktop %{buildroot}%{_datadir}/applications/multimc.desktop
-
 %files
-%{_datadir}/applications/multimc.desktop
+%{_datadir}/applications/%{name}.desktop
 %{_datadir}/icons/hicolor/scalable/apps/multimc.svg
-%{_datadir}/multimc/run.sh
-
-%clean
-cp -r %{_rpmdir}/* %{_builddir}
-rm %{_builddir}/run.sh
-rm %{_builddir}/multimc.svg
-rm %{_builddir}/multimc.desktop
+%{_optdir}/MultiMC/
+%{_optdir}/MultiMC/run.sh
 
 %changelog
-* Wed Dec 09 11:33:43 EST 2020 Jack Greiner <jack@emoss.org>
-- Improvements to build process, embed desktop file into SPEC to dynamically generate.
-- Change install location to be in line with Fedora packaging guidelines.
-* Wed Nov 25 22:53:59 CET 2020 kb1000 <fedora@kb1000.de>
-- Initial version of the RPM package, based on the Ubuntu package
+* Thu Jun 18 2020 Jack Greiner <jack@emoss.org> - 1.3-1%{?dist}
+- Fixed builds in Copr.
+* Mon Jun 8 2020 Jack Greiner <jack@emoss.org> - 1.2-1%{?dist}
+- Updated in-line documentation
+* Fri Jun 5 2020 Jack Greiner <jack@emoss.org> - 1.0-1%{?dist}
+- Updated in-line documentation
+* Mon Jun 1 2020 Jack Greiner <jack@emoss.org> - 1.0-1%{?dist}
+- Created initial spec file.
