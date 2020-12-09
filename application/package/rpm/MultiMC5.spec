@@ -16,7 +16,6 @@ Source0:        %{name}-%{packageVer}.tar.gz
 ExclusiveArch:  %{ix86} x86_64
 
 Requires:       bash wget qt5-qtbase zenity
-Recommends:     java-1.8.0-openjdk
 
 %description
 Free, open source launcher and instance manager for Minecraft.
